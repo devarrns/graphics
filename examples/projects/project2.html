@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Draw cube with specification of face color</title>
+  </head>
+
+    <body onload="main()">
+      <div>
+        <canvas id="webgl" width="800" height="400">
+        Please use a browser that supports "canvas"
+        </canvas>
+      </div>
+      <div>
+        <label style="width: 80px; display: inline-block;">
+          longitude :
+        </label>
+        <input id="longitude" type="range" min="0" max="360" value="180" oninput="change_longitude(this)" style="width: 600px;">
+        <span id="longitude_value">180</span>
+      </div>
+      <div>
+        <label style="width: 80px; display: inline-block;">
+          latitude :
+        </label>
+        <input id="latitude" type="range" min="-90" max="90" value="0" oninput="change_latitude(this)" style="width: 600px;">
+        <span id="latitude_value">0</span>
+      </div>
+
+      <script src="../lib/webgl-utils.js"></script>
+      <script src="../lib/webgl-debug.js"></script>
+      <script src="../lib/cuon-utils.js"></script>
+      <script src="../lib/cuon-matrix.js"></script>
+      <script src="projects2.js"></script>
+      <script>
+        document.onkeydown = function(e) {
+          var key = e.key;
+          var longitude = document.getElementById('longitude');
+          var current_longitude_value = parseInt(longitude.value);
+          var latitude = document.getElementById('latitude');
+          var current_latitude_value = parseInt(latitude.value);
+
+          if (/Arrow/.test(key)) {
+            switch(key) {
+              case 'ArrowUp':
+                latitude.value = current_latitude_value + 1;
+                change_latitude({
+                  value: latitude.value
+                });
+                break;
+              case 'ArrowDown':
+                latitude.value = current_latitude_value - 1;
+                change_latitude({
+                  value: latitude.value
+                });
+                break;
+              case 'ArrowLeft':
+                longitude.value = current_longitude_value - 1;
+                change_longitude({
+                  value: longitude.value
+                });
+                break;
+              case 'ArrowRight':
+                longitude.value = current_longitude_value + 1;
+                change_longitude({
+                  value: longitude.value
+                });
+                break;
+            }
+
+            return false;
+          }
+        };
+      </script>
+    </body>
+  </html>
