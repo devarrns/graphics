@@ -20,6 +20,8 @@ var FSHADER_SOURCE =
   '  gl_FragColor = v_Color;\n' +
   '}\n';
 
+var do_draw = null;
+
 function main() {
   // Retrieve <canvas> element
   var canvas = document.getElementById('webgl');
@@ -27,7 +29,7 @@ function main() {
   var	h = canvas.height;
 
   // Get the rendering context for WebGL
-  window.gl = getWebGLContext(canvas);
+  var gl = getWebGLContext(canvas);
   if (!gl) {
     console.log('Failed to get the rendering context for WebGL');
     return;
@@ -39,45 +41,60 @@ function main() {
     return;
   }
 
-  // Set the vertex information
-  window.n = initVertexBuffers(gl);
-  if (n < 0) {
-    console.log('Failed to set the vertex information');
-    return;
-  }
-
   // Set the clear color and enable the depth test
-  gl.clearColor(0.0, 0.0, 0.0, 1.0);
   gl.enable(gl.DEPTH_TEST);
 
   // Get the storage location of u_MvpMatrix
-  window.u_MvpMatrix = gl.getUniformLocation(gl.program, 'u_MvpMatrix');
+  var u_MvpMatrix = gl.getUniformLocation(gl.program, 'u_MvpMatrix');
   if (!u_MvpMatrix) {
     console.log('Failed to get the storage location of u_MvpMatrix');
     return;
   }
 
-  // Set the eye point and the viewing volume
-  window.mvpMatrix = new Matrix4();
-  mvpMatrix.setPerspective(30, 1, 1, 100);
-  mvpMatrix.lookAt(3, 3, 7, 0, 0, 0, 0, 1, 0);
+  var n = initVertexBuffers(gl, longitude, latitude);
+  if (n < 0) {
+    console.log('Failed to set the vertex information');
+    return;
+  }
 
-  // Pass the model view projection matrix to u_MvpMatrix
-  gl.uniformMatrix4fv(u_MvpMatrix, false, mvpMatrix.elements);
+  // Set the vertex information
+  do_draw = function(longitude, latitude) {
+    gl.clearColor(0.0, 0.0, 0.0, 1.0);
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-  // Clear color and depth buffer
-  gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+    // 왼쪽 큐브
+    // Set the eye point and the viewing volume
+    var mvpMatrix_left = new Matrix4();
+    mvpMatrix_left.setPerspective(30, 1, 1, 100);
+    mvpMatrix_left.lookAt(3, 3, 7, 0, 0, 0, 0, 1, 0);
+    // mvpMatrix_left.rotate(longitude, 0, 1, 0);
 
-  // 왼쪽 큐브
-  gl.viewport(0, 0, w/2, h);
-  gl.drawElements(gl.TRIANGLES, n, gl.UNSIGNED_BYTE, 0);
+    // Pass the model view projection matrix to u_MvpMatrix
+    gl.uniformMatrix4fv(u_MvpMatrix, false, mvpMatrix_left.elements);
 
-  // 오른쪽 큐브
-  gl.viewport(w/2, 0, w/2, h);
-  gl.drawElements(gl.TRIANGLES, n, gl.UNSIGNED_BYTE, 0);
+    // Clear color and depth buffer
+    gl.viewport(0, 0, w/2, h);
+    gl.drawElements(gl.TRIANGLES, n, gl.UNSIGNED_BYTE, 0);
+
+    // 오른쪽 큐브
+    var mvpMatrix_right = new Matrix4();
+    mvpMatrix_right.setPerspective(30, 1, 1, 100);
+    mvpMatrix_right.lookAt(0, 0, 10, 0, 0, -1, 0, 1, 0);
+    // mvpMatrix_right.rotate(longitude, 0, Math.cos(latitude / 180 * 2 * Math.PI), Math.sin((180 - latitude) / 180 * 2 * Math.PI));
+    mvpMatrix_right.rotate(longitude, 0, 1, 0);
+    mvpMatrix_right.rotate(latitude, 1, 0, 0);
+
+    // Pass the model view projection matrix to u_MvpMatrix
+    gl.uniformMatrix4fv(u_MvpMatrix, false, mvpMatrix_right.elements);
+
+    gl.viewport(w/2, 0, w/2, h);
+    gl.drawElements(gl.TRIANGLES, n, gl.UNSIGNED_BYTE, 0);
+  }
+
+  do_draw(180, 0);
 }
 
-function initVertexBuffers(gl) {
+function initVertexBuffers(gl, longitude, latitude) {
   // Create a cube
   //    v6----- v5
   //   /|      /|
@@ -158,9 +175,11 @@ function initArrayBuffer(gl, data, num, type, attribute) {
 function change_longitude(e) {
   var value = e.value;
   document.getElementById('longitude_value').innerHTML = value;
+  do_draw(value,  parseInt(document.getElementById('latitude').value, 10));
 }
 
 function change_latitude(e) {
   var value = e.value;
   document.getElementById('latitude_value').innerHTML = value;
+  do_draw(parseInt(document.getElementById('longitude').value, 10), value);
 }
