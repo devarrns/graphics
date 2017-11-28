@@ -1,0 +1,36 @@
+Requirements
+  Draw a cube with edge lengths 2 and with its center at the origin of the world space. The faces of the cube should be colored differently.
+  Draw two tracks as circles with their radii (ρ in [Figure]) 10.
+    One track (white circle in the video) denotes the “equator” and the camera moves along the equator as its longitude changes. (θ in [Figure])
+    The other track (yellow circle in the video) denotes the path along which the camera moves as its latitude changes. (δ in [Figure]) Note that this track should be transformed as the longitude changes.
+  To show the camera location (P in [Figure]), draw the “line of sight” (the pink line in the video.) from the camera position to the origin. The distance to the camera from the origin should be 10.
+  On the left half of the canvas, draw the whole scene (the cube, the camera tracks, and the line-of-sight) seen from the fixed camera. (You do not need to draw the axes.)
+    The camera can be either orthographic or perspective.
+    Just make it sure that the whole seen can be seen.
+    You can use setLookAt()/lookAt() for this viewing transformation.
+  On the right half of the canvas, draw the scene viewed from the moving camera.
+    You should use a perspective camera.
+    Set the parameters properly so that the whole cube can be drawn.
+    The distance from the camera to the origin should be 10.
+    When longitude=latitude=0, the camera should be (in world coordinates)
+      located at (0, 0, 10)
+      looking long the direction (0,0,-1)
+      with it “up direction” (0,1,0).
+    You should NOT use setLootAt()/lookAt function for thie viewing transformation.
+
+Instructions
+  Submit two files only. The file names should be
+    proj2.html
+    proj2.js (To avoid being rejected by the mail server, please change the name of this file to proj2.txt.)
+  Do submit any compressed file. Just attach the files as they are.
+  You should submit a README file about your implemntation. (What you successfully implemented, what you failed to implement, etc.)
+  You should use the following four libraries ONLY and include them as below.
+
+     <script src="../lib/webgl-utils.js"></script>
+     <script src="../lib/webgl-debug.js"></script>
+     <script src="../lib/cuon-utils.js"></script>
+     <script src="../lib/cuon-matrix.js"></script>
+
+  You may find the following examples helpful.
+  Drawing multiple objects using JavaScript objects
+  Multiple viewports
