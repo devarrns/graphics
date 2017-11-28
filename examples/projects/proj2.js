@@ -3,10 +3,12 @@
 var VSHADER_SOURCE =
   'attribute vec4 a_Position;\n' +
   'attribute vec4 a_Color;\n' +
-  'uniform mat4 u_MvpMatrix;\n' +
+  'uniform mat4 u_ModelMatrix;\n' +
+  'uniform mat4 u_ViewMatrix;\n' +
+  'uniform mat4 u_ProjMatrix;\n' +
   'varying vec4 v_Color;\n' +
   'void main() {\n' +
-  '  gl_Position = u_MvpMatrix * a_Position;\n' +
+  '  gl_Position = u_ModelMatrix * u_ViewMatrix * u_ProjMatrix * a_Position;\n' +
   '  v_Color = a_Color;\n' +
   '}\n';
 
@@ -45,17 +47,15 @@ function main() {
   gl.enable(gl.DEPTH_TEST);
 
   // Get the storage location of u_MvpMatrix
-  var u_MvpMatrix = gl.getUniformLocation(gl.program, 'u_MvpMatrix');
-  if (!u_MvpMatrix) {
-    console.log('Failed to get the storage location of u_MvpMatrix');
+  var u_ModelMatrix = gl.getUniformLocation(gl.program, 'u_ModelMatrix');
+  var u_ViewMatrix = gl.getUniformLocation(gl.program, 'u_ViewMatrix');
+  var u_ProjMatrix = gl.getUniformLocation(gl.program, 'u_ProjMatrix');
+  if (!u_ModelMatrix || !u_ViewMatrix || !u_ProjMatrix) {
+    console.log('Failed to Get the storage locations of u_ModelMatrix, u_ViewMatrix, and/or u_ProjMatrix');
     return;
   }
 
   var n = initVertexBuffers(gl, longitude, latitude);
-  if (n < 0) {
-    console.log('Failed to set the vertex information');
-    return;
-  }
 
   // Set the vertex information
   do_draw = function(longitude, latitude) {
@@ -64,28 +64,20 @@ function main() {
 
     // 왼쪽 큐브
     // Set the eye point and the viewing volume
-    var mvpMatrix_left = new Matrix4();
-    mvpMatrix_left.setPerspective(30, 1, 1, 100);
-    mvpMatrix_left.lookAt(3, 3, 7, 0, 0, 0, 0, 1, 0);
-    // mvpMatrix_left.rotate(longitude, 0, 1, 0);
-
-    // Pass the model view projection matrix to u_MvpMatrix
-    gl.uniformMatrix4fv(u_MvpMatrix, false, mvpMatrix_left.elements);
-
-    // Clear color and depth buffer
-    gl.viewport(0, 0, w/2, h);
-    gl.drawElements(gl.TRIANGLES, n, gl.UNSIGNED_BYTE, 0);
+    var model_matrix = new Matrix4();
+    var view_matrix = new Matrix4();
+    var proj_matrix = new Matrix4();
 
     // 오른쪽 큐브
-    var mvpMatrix_right = new Matrix4();
-    mvpMatrix_right.setPerspective(30, 1, 1, 100);
-    mvpMatrix_right.lookAt(0, 0, 10, 0, 0, -1, 0, 1, 0);
-    // mvpMatrix_right.rotate(longitude, 0, Math.cos(latitude / 180 * 2 * Math.PI), Math.sin((180 - latitude) / 180 * 2 * Math.PI));
-    mvpMatrix_right.rotate(longitude, 0, 1, 0);
-    mvpMatrix_right.rotate(latitude, 1, 0, 0);
+    console.log(model_matrix.setRotate);
+    model_matrix.setRotate(longitude, 0, 1, 0);
+    view_matrix.setPerspective(20, 1, 1, 100);
+    proj_matrix.setLookAt(0, 0, 10, 0, 0, -1, 0, 1, 0);
 
     // Pass the model view projection matrix to u_MvpMatrix
-    gl.uniformMatrix4fv(u_MvpMatrix, false, mvpMatrix_right.elements);
+    gl.uniformMatrix4fv(u_ModelMatrix, false, model_matrix.elements);
+    gl.uniformMatrix4fv(u_ViewMatrix, false, view_matrix.elements);
+    gl.uniformMatrix4fv(u_ProjMatrix, false, proj_matrix.elements);
 
     gl.viewport(w/2, 0, w/2, h);
     gl.drawElements(gl.TRIANGLES, n, gl.UNSIGNED_BYTE, 0);
